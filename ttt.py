@@ -1,10 +1,17 @@
 import pygame
+import numpy
+
 import copy
 import time
-import numpy
+
 import random
 
 pygame.init()
+
+WIDTH = 400
+HEIGHT = 400
+mainScreen = pygame.display.set_mode((WIDTH, HEIGHT))
+pygame.display.set_caption("Tic-Tac-Toe")
 
 WHITE = (255, 255, 255)
 BROWN = (202, 164, 114)
@@ -68,6 +75,8 @@ class BOT():
         self.nodes.append(self.root)
 
         self.nodesQuantity = [1] #Stores the quantity of nodes in each level (index represents the level)
+
+    # **PUBLIC FUNCTIONS**
 
     def start(self):
         start = time.process_time()
@@ -133,6 +142,8 @@ class BOT():
             diff = BOT.__highlightCellsStringDiff(currentGrid, totallyRandomScenario)
         
         return diff.find('D')
+
+    # **PRIVATE FUNCTIONS**
 
     # **Coded Cells** set of cells represented by a character numpy.array
     def __generateEmpty():
@@ -296,12 +307,7 @@ class BOT():
                 node.value = value
 
 class Game():
-    WIDTH = 400
-    HEIGHT = 400
-
     def __init__(self, playerIdentifier, botIdentifier, first):
-        self.screen = pygame.display.set_mode((self.WIDTH, self.HEIGHT))
-        pygame.display.set_caption("Tic-Tac-Toe")
         self.isActive = True
 
         self.cells = list()
@@ -309,6 +315,8 @@ class Game():
         self.botIdentifier = botIdentifier
         self.playerIdentifier = playerIdentifier
         self.first = first
+
+        self.__drawGrid()
 
         #Initializing bot...
         self.bot = BOT(self.botIdentifier == first, self.botIdentifier)
@@ -359,25 +367,27 @@ class Game():
 
     #Draws tic-tac-toe grid
     def __drawGrid(self):
-        self.screen.fill(BROWN)
+        mainScreen.fill(BROWN)
 
         #Horizontal lines
-        pygame.draw.line(self.screen, WHITE, (0, self.HEIGHT/3 * 1), (self.WIDTH, self.HEIGHT/3 * 1), 5)
-        pygame.draw.line(self.screen, WHITE, (0, self.HEIGHT/3 * 2), (self.WIDTH, self.HEIGHT/3 * 2), 5)
+        pygame.draw.line(mainScreen, WHITE, (0, HEIGHT/3 * 1), (WIDTH, HEIGHT/3 * 1), 5)
+        pygame.draw.line(mainScreen, WHITE, (0, HEIGHT/3 * 2), (WIDTH, HEIGHT/3 * 2), 5)
 
         #Vertical lines
-        pygame.draw.line(self.screen, WHITE, (self.WIDTH/3 * 1, 0), (self.WIDTH/3 * 1, self.HEIGHT), 5)
-        pygame.draw.line(self.screen, WHITE, (self.WIDTH/3 * 2, 0), (self.WIDTH/3 * 2, self.HEIGHT), 5)
+        pygame.draw.line(mainScreen, WHITE, (WIDTH/3 * 1, 0), (WIDTH/3 * 1, HEIGHT), 5)
+        pygame.draw.line(mainScreen, WHITE, (WIDTH/3 * 2, 0), (WIDTH/3 * 2, HEIGHT), 5)
+
+        pygame.display.flip()
 
     def __getCellsRect(self):
-        rectWidth = Game.WIDTH/3
-        rectHeight = Game.HEIGHT/3
+        rectWidth = WIDTH/3
+        rectHeight = HEIGHT/3
 
         cells = list()
         for x in range(0, 3):
             for y in range(0, 3):
                 cells.append(
-                    pygame.Rect(Game.WIDTH/3 * x, Game.HEIGHT/3 * y, rectWidth, rectHeight)
+                    pygame.Rect(WIDTH/3 * x, HEIGHT/3 * y, rectWidth, rectHeight)
                 )
         
         return cells
@@ -392,11 +402,11 @@ class Game():
         xWidth = cell.rect.width/4
         xHeight = cell.rect.height/4
 
-        pygame.draw.line(self.screen, BLACK, (cell.rect.center[0] - xWidth, cell.rect.center[1] + xHeight), (cell.rect.center[0] + xWidth, cell.rect.center[1] - xHeight), 3)
-        pygame.draw.line(self.screen, BLACK, (cell.rect.center[0] + xWidth, cell.rect.center[1] + xHeight), (cell.rect.center[0] - xWidth, cell.rect.center[1] - xHeight), 3)
+        pygame.draw.line(mainScreen, BLACK, (cell.rect.center[0] - xWidth, cell.rect.center[1] + xHeight), (cell.rect.center[0] + xWidth, cell.rect.center[1] - xHeight), 3)
+        pygame.draw.line(mainScreen, BLACK, (cell.rect.center[0] + xWidth, cell.rect.center[1] + xHeight), (cell.rect.center[0] - xWidth, cell.rect.center[1] - xHeight), 3)
 
     def __drawO(self, cell):
-        pygame.draw.circle(self.screen, BLACK, cell.rect.center, (cell.rect.width + cell.rect.height)/6, 3)
+        pygame.draw.circle(mainScreen, BLACK, cell.rect.center, (cell.rect.width + cell.rect.height)/6, 3)
 
     #Bounded to checkWin function
     def __isWinTrio(c1, c2, c3, turn):
@@ -423,50 +433,90 @@ class Game():
         turn = self.first
 
         while self.isActive:
+            mouseDown = False
+
             for e in pygame.event.get():
                 if e.type == pygame.QUIT:
                     self.isActive = False
-                if ((pygame.mouse.get_pressed()[0] == True and turn == self.playerIdentifier) or turn == self.botIdentifier): #Mouse left click
-                    cell = None
-                
-                    if (turn == self.playerIdentifier):
-                        mouseX, mouseY = pygame.mouse.get_pos()
-                        cell = self.__getCellFromPoint(mouseX, mouseY)
-                    else: #Bot's turn
-                        cell = self.cells[self.bot.choose(self.cells)]
+                if e.type == pygame.MOUSEBUTTONDOWN:
+                    mouseDown = True
+
+            shouldProcessPlayerMove = mouseDown and pygame.mouse.get_pressed()[0] == True and turn == self.playerIdentifier
+            if (shouldProcessPlayerMove or turn == self.botIdentifier):
+                cell = None
+            
+                if (turn == self.playerIdentifier):
+                    mouseX, mouseY = pygame.mouse.get_pos()
+                    cell = self.__getCellFromPoint(mouseX, mouseY)
+                else: #Bot's turn
+                    cell = self.cells[self.bot.choose(self.cells)]
+                    
+                #Filling cell
+                if (cell.value == 'E'):
+                    if (turn == 'X'):
+                        self.__drawX(cell)
+                    else:
+                        self.__drawO(cell)
+                    cell.updateValue(turn)
                         
-                    #Filling cell
-                    if (cell.value == 'E'):
-                        if (turn == 'X'):
-                            self.__drawX(cell)
-                        else:
-                            self.__drawO(cell)
-                        cell.updateValue(turn)
-                            
-                        pygame.display.flip()
-                    else: break
+                    pygame.display.flip()
 
                     #Checking win
                     winTrio = Game.checkWin(self.cells, turn) 
                     if (winTrio != None):
                         pygame.draw.line(
-                            self.screen, RED,
+                            mainScreen, RED,
                             (winTrio[0].rect.center[0], winTrio[0].rect.center[1]), (winTrio[2].rect.center[0], winTrio[2].rect.center[1]), 4
                         )
                         pygame.display.flip()
 
                         self.isActive = False
                         pygame.time.wait(3000)
-                        break
-
                     #Checking draw
-                    if (Game.isDraw(self.cells)):
+                    elif (Game.isDraw(self.cells)):
                         self.isActive = False
                         pygame.time.wait(1500)
 
                     turn = Game.getNextTurn(turn)
 
-g = Game('X', 'O', 'X')
+#Asking user to choose who starts first
+shouldPlayStart = False
+
+info_font = pygame.font.Font('freesansbold.ttf', 32)
+info_text = info_font.render("Want to start first?", True, WHITE)
+
+yes_font = pygame.font.Font('freesansbold.ttf', 32)
+yes_text = yes_font.render(" Yes ", True, WHITE)
+
+no_font = pygame.font.Font('freesansbold.ttf', 32)
+no_text = no_font.render(" No ", True, WHITE)
+
+i_rect = info_text.get_rect(center=(WIDTH/2, 60))
+y_rect = yes_text.get_rect(center=(WIDTH/2 - 60, HEIGHT/2))
+n_rect = no_text.get_rect(center=(WIDTH/2 + 60, HEIGHT/2))
+
+mainScreen.blit(info_text, i_rect)
+mainScreen.blit(yes_text, y_rect)
+mainScreen.blit(no_text, n_rect)
+
+pygame.display.flip()
+
+chose = False
+game = None
+
+while not chose:
+    for e in pygame.event.get():
+        if (e.type == pygame.QUIT): chose = True
+        if (e.type == pygame.MOUSEBUTTONDOWN):
+            if (y_rect.collidepoint(e.pos)):
+                shouldPlayStart = True
+                chose = True
+
+            elif (n_rect.collidepoint(e.pos)):
+                shouldPlayStart = False
+                chose = True
+
+g = Game('X', 'O', 'X' if (shouldPlayStart) else 'O')
 
 while True:
     g.start()
