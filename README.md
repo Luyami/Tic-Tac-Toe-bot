@@ -9,4 +9,5 @@ In order to beat the bot, you must defy the laws of physics (: (or just do some 
 
 # Dependencies
 **Numpy:** https://numpy.org/install/
+
 **Pygame:** https://www.pygame.org/wiki/GettingStarted
