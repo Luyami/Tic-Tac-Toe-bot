@@ -502,8 +502,6 @@ mainScreen.blit(no_text, n_rect)
 pygame.display.flip()
 
 chose = False
-game = None
-
 while not chose:
     for e in pygame.event.get():
         if (e.type == pygame.QUIT): chose = True
