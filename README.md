@@ -6,3 +6,7 @@ The bot's logic is based on an Artificial Intelligence method called **Minimax a
 
 # Feel free to try to beat the bot
 In order to beat the bot, you must defy the laws of physics (: (or just do some adjustments in source code)
+
+# Dependencies
+**Numpy:** https://numpy.org/install/
+**Pygame:** https://www.pygame.org/wiki/GettingStarted
