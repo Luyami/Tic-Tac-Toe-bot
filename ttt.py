@@ -79,13 +79,14 @@ class BOT():
     # **PUBLIC FUNCTIONS**
 
     def start(self):
+        print('Initializing bot...')
         start = time.process_time()
 
         self.__generateGameTree()
         self.__generateAllNodeValues()
 
         end = time.process_time()
-        print(f'Time until completion: {end - start}')
+        print(f'Initialization time: {end - start}')
 
     #Chooses a Tic-Tac-Toe cell index based on the best move
     def choose(self, currentGrid):
