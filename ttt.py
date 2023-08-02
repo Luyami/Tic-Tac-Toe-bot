@@ -438,7 +438,7 @@ class Game():
 
             for e in pygame.event.get():
                 if e.type == pygame.QUIT:
-                    self.isActive = False
+                    exit()
                 if e.type == pygame.MOUSEBUTTONDOWN:
                     mouseDown = True
 
